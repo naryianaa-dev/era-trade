@@ -1,0 +1,22 @@
+# MIME-типы для PWA
+AddType application/manifest+json .webmanifest
+AddType application/json          .json
+
+<IfModule mod_headers.c>
+    # UTF-8 для манифеста (JSON по умолчанию UTF-8, но не все ридеры это уважают)
+    <FilesMatch "\.webmanifest$">
+        Header set Content-Type "application/manifest+json; charset=utf-8"
+        Header set Cache-Control "public, max-age=86400"
+    </FilesMatch>
+
+    # Service-worker не должен кэшироваться браузером — иначе обновление не доедет
+    <FilesMatch "service-worker\.js$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Service-Worker-Allowed "/"
+    </FilesMatch>
+
+    # Иконки и логотипы — год в кэше
+    <FilesMatch "\.(png|jpg|jpeg|gif|webp|svg|ico|woff2?)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>

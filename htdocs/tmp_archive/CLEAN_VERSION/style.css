@@ -1,0 +1,162 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    background: #000 url('sky-banner.jpg') no-repeat center center fixed; 
+    background-size: cover; color: #fff; font-family: 'Inter', sans-serif; 
+    min-height: 100vh; display: flex; flex-direction: column; 
+    overflow-x: hidden;
+}
+.container { max-width: 1200px; margin: 0 auto; width: 100%; padding: 0 20px; }
+
+/* ХЕДЕР */
+header { background: #fff; padding: 15px 0; color: #000; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+.h-flex { display: flex; justify-content: space-between; align-items: center; position: relative; }
+.logo { height: 45px; width: auto; flex-shrink: 1; }
+.h-right { display: flex; align-items: center; gap: 12px; }
+
+nav { display: flex; align-items: center; }
+nav a { color: #000; text-decoration: none; font-weight: 800; font-size: 12px; text-transform: uppercase; margin-right: 15px; }
+
+.server-time { display: flex; align-items: center; background: #f0f0f0; padding: 6px 10px; border-radius: 8px; font-weight: 900; font-size: 13px; color: #000; }
+.dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; animation: pulse 1.5s infinite; margin-right: 6px; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } }
+
+.lang-switch { display: flex; background: #f0f0f0; padding: 2px; border-radius: 6px; }
+.lang-btn { cursor: pointer; padding: 4px 8px; border-radius: 4px; font-weight: 900; font-size: 10px; border: none; background: transparent; color: #666; }
+.lang-btn.active { background: #0088cc; color: #fff; }
+
+/* КНОПКА ВХОДА */
+.auth-btn { background: #0088cc; color: #fff !important; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 800; font-size: 11px; text-transform: uppercase; transition: 0.3s; flex-shrink: 0; }
+.auth-btn:hover { background: #006699; }
+.mobile-auth-btn { display: none; }
+
+/* БУРГЕР */
+.burger { display: none; flex-direction: column; gap: 4px; cursor: pointer; border: none; background: none; padding: 5px; flex-shrink: 0; }
+.burger div { width: 22px; height: 2px; background: #000; transition: 0.3s; }
+
+/* ГЛАВНАЯ СЕТКА */
+main { flex: 1; padding: 40px 0; display: flex; align-items: center; }
+.promo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; width: 100%; }
+.promo-card { 
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px); 
+    padding: 40px 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); 
+    text-align: center; display: flex; flex-direction: column; justify-content: space-between; min-height: 380px; 
+}
+.promo-card h3 { color: #38bdf8; font-size: 22px; margin-bottom: 15px; font-weight: 900; text-transform: uppercase; }
+.btn-card { display: inline-block; background: #0088cc; color: #fff; padding: 14px 20px; border-radius: 8px; text-decoration: none; font-weight: 800; text-transform: uppercase; font-size: 12px; }
+
+/* ФУТЕР */
+footer { background: #000; padding: 25px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+.f-grid { display: flex; justify-content: space-between; align-items: center; }
+.footer-links a { color: #fff; text-decoration: none; margin-right: 20px; font-weight: 700; font-size: 13px; }
+
+/* АДАПТИВ */
+@media (max-width: 1024px) {
+    .burger { display: flex; }
+    .auth-btn { display: none; } /* Прячем в хедере на мобиле */
+    nav { 
+        display: none; position: absolute; top: 100%; left: -20px; right: -20px; 
+        background: #fff; flex-direction: column; padding: 20px; border-top: 1px solid #eee; z-index: 1000;
+    }
+    nav.active { display: flex; }
+    nav a { margin: 10px 0; width: 100%; text-align: center; font-size: 16px; border-bottom: 1px solid #f9f9f9; padding-bottom: 10px; }
+    .mobile-auth-btn { display: block !important; background: #0088cc; color: #fff !important; margin-top: 15px !important; border-radius: 8px; padding: 12px !important; border: none; }
+    .promo-grid { grid-template-columns: 1fr; }
+    .logo { height: 35px; }
+}
+@media (max-width: 480px) {
+    .server-time { display: none; }
+    .f-grid { flex-direction: column; gap: 15px; text-align: center; }
+}
+/* --- СТИЛИ МОДАЛЬНОГО ОКНА --- */
+.modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 10000; 
+    left: 0; top: 0; 
+    width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.85); 
+    backdrop-filter: blur(8px); 
+}
+.modal-content { 
+    background: #fff; 
+    color: #000; 
+    margin: 10% auto; 
+    padding: 40px; 
+    border-radius: 20px; 
+    width: 90%; 
+    max-width: 400px; 
+    position: relative; 
+    animation: slideDown 0.3s ease; 
+    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+}
+@keyframes slideDown { 
+    from { transform: translateY(-50px); opacity: 0; } 
+    to { transform: translateY(0); opacity: 1; } 
+}
+.close-modal { 
+    position: absolute; 
+    right: 20px; top: 15px; 
+    font-size: 28px; 
+    cursor: pointer; 
+    color: #aaa; 
+    transition: 0.3s;
+}
+.close-modal:hover { color: #000; }
+.modal-content h2 { 
+    margin-bottom: 25px; 
+    font-weight: 900; 
+    color: #0088cc; 
+    text-align: center; 
+    text-transform: uppercase;
+}
+.modal-content input, .modal-content select { 
+    width: 100%; 
+    padding: 14px; 
+    margin: 10px 0; 
+    border: 1px solid #ddd; 
+    border-radius: 10px; 
+    font-size: 16px; 
+    font-family: 'Inter', sans-serif;
+}
+.modal-submit { 
+    width: 100%; 
+    padding: 16px; 
+    background: #0088cc; 
+    color: #fff; 
+    border: none; 
+    border-radius: 10px; 
+    font-weight: 800; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+    margin-top: 15px; 
+    transition: 0.3s;
+}
+.modal-submit:hover { background: #006699; }
+.field-label {
+    display: block;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+.file-upload-block {
+    margin: 15px 0;
+    padding: 10px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+.status-box {
+    font-size: 12px;
+    color: #666;
+    padding: 12px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+.pro-box {
+    text-align: center;
+    border: 2px solid #38bdf8;
+    background: #fff;
+}

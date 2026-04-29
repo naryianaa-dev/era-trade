@@ -1,0 +1,63 @@
+[2026-04-27 15:16:01] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777317360&hash=5fd2ea8cea15e6f96d1f72e438decced4441ed7ab451d1f54811a46210cf5fd9&i=1 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 REF=https://forsage.ct.ws/telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=17773
+[2026-04-27 15:16:01] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777317360","hash":"5fd2ea8c…","i":"1"}
+[2026-04-27 15:16:01] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:16:55] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-27 15:16:56] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777317415&hash=eeeb4b64f50c0c03f780263919180e18ddfc044f1f26a6465c624ebb647bbd03 UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-27 15:16:56] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777317415","hash":"eeeb4b64…"}
+[2026-04-27 15:16:56] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:17:57] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-27 15:17:57] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777317476&hash=cde2463e0dff9cefa191c0d92322927199ae3d00d3a3be1817d3de573eee6941 UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-27 15:17:57] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777317476","hash":"cde2463e…"}
+[2026-04-27 15:17:57] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:21:12] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777317671&hash=94a2f10c665a2d10ea7d22e5f38993bbd7a35e0297a388958b993aa1c8df10b9 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 REF=https://forsage.ct.ws/index.php
+[2026-04-27 15:21:12] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777317671","hash":"94a2f10c…"}
+[2026-04-27 15:21:12] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:21:19] REQ GET /telegram_auth.php UA=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36; Devin/1.0; +devin REF=
+[2026-04-27 15:25:53] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-27 15:25:54] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777317953&hash=6d52c52ad266bda8b35f24907ee96e2cef0d5457bc5ac86dbbf44281c6ab6d96 UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-27 15:25:54] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777317953","hash":"6d52c52a…"}
+[2026-04-27 15:25:54] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:30:50] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777318250&hash=354616351123035b24d4e10ecdd8c58c71a24c065d0794be749a09ee986b3ef2 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 REF=https://forsage.ct.ws/index.php?lang=ru
+[2026-04-27 15:30:50] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777318250","hash":"35461635…"}
+[2026-04-27 15:30:50] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:46:59] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-27 15:47:01] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777319218&hash=3fd25ff00940d42d0f57b2fc65dcf4f3be2f4b62ce9e5319296c4c166002136c UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-27 15:47:01] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777319218","hash":"3fd25ff0…"}
+[2026-04-27 15:47:01] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:48:23] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-27 15:48:24] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777319303&hash=4712aa9a8759757cfa9c7de866e1bb2104a7d43526676a71c4d773a21e2bd72b UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-27 15:48:24] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777319303","hash":"4712aa9a…"}
+[2026-04-27 15:48:24] HASH OK id=257524397 username=aartur444
+[2026-04-27 15:48:24] SESSION SET sid=8dd8b59c7b6874538ce4115045c87203 user_id=49 username=aartur444
+[2026-04-27 15:48:24] PROFILE LANDING tgauth=success sid=8dd8b59c7b6874538ce4115045c87203 user_id=49 user_logged=∅ username=aartur444 UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHT
+[2026-04-27 23:34:49] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-27 23:34:49] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777347289&hash=d4a103caa5308c9b76373a1337f1e70807656b554ff43010569153686e35c9bd UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-27 23:34:49] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777347289","hash":"d4a103ca…"}
+[2026-04-27 23:34:49] HASH OK id=257524397 username=aartur444
+[2026-04-27 23:34:50] TG AUTH FLOW user_id=49 status=active new=0
+[2026-04-27 23:34:50] SESSION SET sid=8dd8b59c7b6874538ce4115045c87203 user_id=49 username=aartur444
+[2026-04-27 23:34:50] PROFILE LANDING tgauth=success sid=8dd8b59c7b6874538ce4115045c87203 user_id=49 user_logged=∅ username=aartur444 UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHT
+[2026-04-28 12:06:44] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777392404&hash=dce24f7bce23d81a6fbdaeee9b3e641b245e3b78b9097c4beeae25666396d8c5 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 REF=https://forsage.ct.ws/index.php
+[2026-04-28 12:06:44] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777392404","hash":"dce24f7b…"}
+[2026-04-28 12:06:44] HASH OK id=257524397 username=aartur444
+[2026-04-28 12:06:44] TG AUTH FLOW user_id=49 status=active new=0
+[2026-04-28 12:06:44] SESSION SET sid=da04d453cf367acda579513d5ef7a6b6 user_id=49 username=aartur444
+[2026-04-28 12:06:44] PROFILE LANDING tgauth=success sid=da04d453cf367acda579513d5ef7a6b6 user_id=49 user_logged=∅ username=aartur444 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
+[2026-04-28 12:20:25] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777393225&hash=7bc3e944e507ea0129deaf0ed6fbdbafd6365c092c9efb4f69f52aedacf7df00 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 REF=https://forsage.ct.ws/index.php
+[2026-04-28 12:20:25] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777393225","hash":"7bc3e944…"}
+[2026-04-28 12:20:25] HASH OK id=257524397 username=aartur444
+[2026-04-28 12:20:25] TG AUTH FLOW user_id=49 status=active new=0
+[2026-04-28 12:20:25] SESSION SET sid=da04d453cf367acda579513d5ef7a6b6 user_id=49 username=aartur444
+[2026-04-28 12:20:25] PROFILE LANDING tgauth=success sid=da04d453cf367acda579513d5ef7a6b6 user_id=49 user_logged=∅ username=aartur444 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
+[2026-04-28 12:47:47] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777394867&hash=bf32a5cbb03d2b1077d52763039c883e4fa7b232e895ba1d57030d8baa93af21 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 REF=https://forsage.ct.ws/index.php
+[2026-04-28 12:47:47] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777394867","hash":"bf32a5cb…"}
+[2026-04-28 12:47:47] HASH OK id=257524397 username=aartur444
+[2026-04-28 12:47:47] TG AUTH FLOW user_id=49 status=active new=0
+[2026-04-28 12:47:47] SESSION SET sid=da04d453cf367acda579513d5ef7a6b6 user_id=49 username=aartur444
+[2026-04-28 12:47:47] PROFILE LANDING tgauth=success sid=da04d453cf367acda579513d5ef7a6b6 user_id=49 user_logged=∅ username=aartur444 UA=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)
+[2026-04-29 11:10:13] REQ GET /telegram_auth.php UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=
+[2026-04-29 11:10:13] REQ GET /telegram_auth.php?id=257524397&first_name=Artur&last_name=Artur&username=aartur444&auth_date=1777475413&hash=fddb9e3cbc3e009605eca339c57944b7ccbe58201e9bce30283b5acd4e0d6628 UA=Mozilla/5.0 (iPhone; CPU iPhone OS 16_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Mobile/15E1 REF=http://forsage.ct.ws/telegram_auth.php
+[2026-04-29 11:10:13] GET {"id":"257524397","first_name":"Artur","last_name":"Artur","username":"aartur444","auth_date":"1777475413","hash":"fddb9e3c…"}
+[2026-04-29 11:10:13] HASH OK id=257524397 username=aartur444
+[2026-04-29 11:10:13] TG AUTH FLOW user_id=49 status=active new=0
+[2026-04-29 11:10:13] SESSION SET sid=b78c478adb99296bdd11640745893958 user_id=49 username=aartur444

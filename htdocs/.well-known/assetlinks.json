@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "ru.eraetp.app",
+    "sha256_cert_fingerprints": ["1e:f9:12:95:40:24:a9:64:ec:64:07:b5:fa:e6:25:0a:d4:8e:fc:16:c4:6a:26:63:5d:6d:38:13:09:bd:e3:d0"]
+  }
+}]
