@@ -95,10 +95,11 @@ header{position:fixed;top:0;left:0;right:0;height:80px;background:#e5e4e2;displa
 .lang-btn.active{background:#1e293b;color:#fff;border-color:#1e293b}
 .btn-login{background:#0088cc;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-weight:900;cursor:pointer;font-size:13px;white-space:nowrap}
 .btn-login:hover{background:#0077b3}
-.burger-trigger{display:none;cursor:pointer;width:44px;height:44px;align-items:center;justify-content:center;background:transparent;border:none;flex-shrink:0;color:#ffffff;-webkit-tap-highlight-color:transparent;padding:0}
-.burger-trigger:hover,.burger-trigger:active{background:transparent}
-.burger-trigger i,.burger-trigger svg{color:#ffffff!important;stroke:#ffffff!important;stroke-width:2.5!important;width:30px!important;height:30px!important;display:block}
-#mobileMenu{position:fixed;top:0;left:0;right:0;bottom:0;background:#fff;z-index:2001;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto;transform:translateX(100%);transition:transform .35s ease}
+.burger-trigger{display:none;cursor:pointer;width:auto;min-width:44px;height:38px;padding:0 14px;align-items:center;justify-content:center;background:#0088cc;border:none;flex-shrink:0;color:#fff;border-radius:999px;-webkit-tap-highlight-color:transparent;box-shadow:0 4px 14px rgba(0,136,204,.25)}
+.burger-trigger:hover{background:#0077b3}
+.burger-trigger:active{background:#006aa0}
+.burger-trigger i,.burger-trigger svg{color:#fff!important;stroke:#fff!important;stroke-width:2.5!important;width:24px!important;height:24px!important;display:block}
+#mobileMenu{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100dvh;background:#fff;z-index:2001;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:max(72px,calc(env(safe-area-inset-top,0px) + 64px)) 20px max(32px,calc(env(safe-area-inset-bottom,0px) + 24px));overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateX(100%);transition:transform .35s ease}
 #mobileMenu.open{transform:translateX(0)}
 .mob-close{position:absolute;top:18px;right:18px;cursor:pointer;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:none;color:#1e293b;-webkit-tap-highlight-color:transparent;padding:0}
 .mob-close i,.mob-close svg{color:#1e293b!important;stroke:#1e293b!important;stroke-width:2.5!important;width:30px!important;height:30px!important}
@@ -107,7 +108,7 @@ header{position:fixed;top:0;left:0;right:0;height:80px;background:#e5e4e2;displa
 .mob-lang-block{display:flex;gap:10px;margin:24px 0 10px}
 .mob-lang-btn{text-decoration:none;font-size:15px;font-weight:800;padding:10px 28px;border-radius:8px;border:2px solid #d1d5db;background:#fff;color:#64748b;cursor:pointer}
 .mob-lang-btn.active{background:#1e293b;color:#fff;border-color:#1e293b}
-.mob-auth-block{margin-top:16px;width:100%;text-align:center;border-top:1px solid #f1f5f9;padding-top:20px}
+.mob-auth-block{margin-top:auto;width:100%;text-align:center;border-top:1px solid #f1f5f9;padding-top:20px;flex-shrink:0}
 .mob-username{font-size:20px;font-weight:900;color:#1e293b;margin-bottom:4px}
 .mob-balance{font-size:16px;color:#22c55e;font-weight:700;margin-bottom:16px}
 .mob-links{display:flex;gap:10px;justify-content:center}
@@ -154,8 +155,8 @@ header{position:fixed;top:0;left:0;right:0;height:80px;background:#e5e4e2;displa
         <?php else: ?>
         <button class="btn-login" onclick="openAuth && openAuth('login')"><?= $t[$lang]['login'] ?></button>
         <?php endif; ?>
-        <button class="burger-trigger" onclick="toggleMobileMenu()">
-            <i data-lucide="menu" style="width:28px;height:28px;color:#1e293b;"></i>
+        <button class="burger-trigger" onclick="toggleMobileMenu()" aria-label="Меню">
+            <i data-lucide="menu" style="width:24px;height:24px;color:#fff;"></i>
         </button>
     </div>
 </header>

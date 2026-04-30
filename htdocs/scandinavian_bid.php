@@ -55,7 +55,7 @@ try {
             $total->execute([$lot_id]);
             $revenue = (float)$total->fetchColumn();
             if ($revenue > 0) {
-                $bonus = round($revenue * 0.15, 2);
+                $bonus = round($revenue * ORGANIZER_BONUS_PCT, 2);
                 $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?")->execute([$bonus, $lot['owner_id']]);
             }
             $pdo->prepare("UPDATE lots SET auction_status = 'finished' WHERE id = ?")->execute([$lot_id]);
@@ -129,7 +129,13 @@ try {
     }
 
     $new_bid_count = (int)$lot['real_bid_count'] + 1;
-    $new_price = (int)$lot['price'] + $bid_step_amount + $bid_step_cost + $penalty;
+    /*
+     * ВАЖНО: тариф за ставку ($bid_step_cost) — это выручка оператора (админа).
+     * 15% от неё начисляются организатору лота при завершении аукциона
+     * (см. начисление бонуса выше в этом же файле). В стоимость лота тариф
+     * НЕ добавляется — цена растёт только на шаг ставки и штраф (если есть).
+     */
+    $new_price = (int)$lot['price'] + $bid_step_amount + $penalty;
     $new_end = date('Y-m-d H:i:s', $now + (int)$lot['timer_add']);
     if ($max_end_ts && strtotime($new_end) > $max_end_ts) $new_end = date('Y-m-d H:i:s', $max_end_ts);
 

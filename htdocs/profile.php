@@ -1447,8 +1447,9 @@ const UPGRADE_COST = 8000;
 function selectAmt(val) {
     selectedAmt = val;
     document.getElementById('custom-amount').value = '';
-    document.querySelectorAll('.amt-btn').forEach((b, i) => {
-        b.classList.toggle('selected', AMOUNTS_LIST[i] === val);
+    document.querySelectorAll('.amt-btn').forEach(b => {
+        const btnVal = parseInt(b.dataset.amt, 10);
+        b.classList.toggle('selected', btnVal === val);
     });
 }
 function deselectAmts() {

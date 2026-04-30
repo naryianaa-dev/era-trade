@@ -62,7 +62,15 @@ header .msc-box .dot { background: #38bdf8 !important; box-shadow: 0 0 8px #38bd
 /* Переключатель языка. */
 header .lang-btn { color: #94a3b8 !important; }
 header .lang-btn.active { color: #38bdf8 !important; background: rgba(56,189,248,.1) !important; }
-/* Бургер на мобильных — белая иконка. */
+/* Бургер на мобильных — белая иконка без синей пилюли (тёмная 3D-тема на фоне). */
+header .burger-trigger {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 44px !important;
+}
+header .burger-trigger:hover,
+header .burger-trigger:active { background: transparent !important; }
 header .burger-trigger i,
 header .burger-trigger svg { color: #ffffff !important; stroke: #ffffff !important; }
 /* Кнопка «Войти». */

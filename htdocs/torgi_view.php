@@ -131,6 +131,15 @@ function ensureOffersColumns(PDO $pdo): void
         if (!in_array('file_path', $cols, true)) {
             $pdo->exec("ALTER TABLE offers ADD COLUMN file_path VARCHAR(500) NULL AFTER comment");
         }
+        if (!in_array('email', $cols, true)) {
+            $pdo->exec("ALTER TABLE offers ADD COLUMN email VARCHAR(255) NULL AFTER user_id");
+        }
+        if (!in_array('contact_type', $cols, true)) {
+            $pdo->exec("ALTER TABLE offers ADD COLUMN contact_type VARCHAR(20) NULL AFTER email");
+        }
+        if (!in_array('contact_value', $cols, true)) {
+            $pdo->exec("ALTER TABLE offers ADD COLUMN contact_value VARCHAR(255) NULL AFTER contact_type");
+        }
     } catch (Throwable $e) {
         error_log('ensureOffersColumns: ' . $e->getMessage());
     }
@@ -215,10 +224,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'submi
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'make_offer') {
     $user_id     = (int)($_SESSION['user_id'] ?? 0);
     $lot_id      = (int)($_GET['id'] ?? 0);
-    $offer_price = normalizeMoney($_POST['price'] ?? '0');
-    $comment     = trim($_POST['comment'] ?? '');
+    $offer_price   = normalizeMoney($_POST['price'] ?? '0');
+    $comment       = trim($_POST['comment'] ?? '');
+    $offer_email   = trim($_POST['email'] ?? '');
+    $contact_type  = trim($_POST['contact_type'] ?? 'phone');
+    if (!in_array($contact_type, ['phone','email','telegram'], true)) $contact_type = 'phone';
+    $contact_value = trim($_POST['contact_value'] ?? '');
     if ($lot_id <= 0 || $offer_price <= 0) {
         setLotMsg('Укажите корректную цену', $lot_id);
+    }
+    if ($offer_email === '' || !filter_var($offer_email, FILTER_VALIDATE_EMAIL)) {
+        setLotMsg('Укажите корректный e-mail', $lot_id);
+    }
+    if ($contact_value === '') {
+        setLotMsg('Укажите контакт для связи', $lot_id);
     }
     $stmt_price = $pdo->prepare("SELECT price FROM torgi WHERE id = ?");
     $stmt_price->execute([$lot_id]);
@@ -240,10 +259,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'make_
     ensureOffersColumns($pdo);
     try {
         $stmt = $pdo->prepare("
-            INSERT INTO offers (lot_id, user_id, price, comment, file_path, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 'pending', NOW())
+            INSERT INTO offers (lot_id, user_id, email, contact_type, contact_value, price, comment, file_path, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
         ");
-        $stmt->execute([$lot_id, $user_id ?: null, $offer_price, $comment, $filePath ?: null]);
+        $stmt->execute([$lot_id, $user_id ?: null, $offer_email, $contact_type, $contact_value, $offer_price, $comment, $filePath ?: null]);
         $offer_id = (int)$pdo->lastInsertId();
         /* Если фронт отметил «подписать ЭЦП» — связываем последнюю подпись пользователя
            (target_type='commission_offer', signed_at в пределах 60 секунд) с этим оффером. */
@@ -730,22 +749,27 @@ include 'header.php';
     inset:0;
     background:rgba(15,23,42,.68);
     display:none;
-    align-items:center;
+    align-items:flex-start;
     justify-content:center;
     padding:20px;
     z-index:9999;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
 }
 .modal.active { display:flex; }
 .modal-content {
     width:100%;
     max-width:640px;
-    max-height:92vh;
+    max-height:calc(100vh - 40px);
+    max-height:calc(100dvh - 40px);
     overflow:auto;
+    -webkit-overflow-scrolling:touch;
     background:#fff;
     border-radius:18px;
     padding:20px;
     position:relative;
     box-shadow:0 30px 80px rgba(2,8,23,.28);
+    margin:auto 0;
 }
 .modal-close {
     position:absolute;
@@ -982,7 +1006,8 @@ include 'header.php';
     .torgi-price { font-size:24px !important; }
     .torgi-title { font-size:18px !important; }
     .torgi-price-card, .torgi-info-card, .torgi-desc-card { padding:12px !important; }
-    .modal-content { width:95% !important; max-width:95% !important; padding:16px !important; }
+    .modal { padding:10px !important; align-items:flex-start !important; }
+    .modal-content { width:100% !important; max-width:100% !important; padding:16px !important; max-height:calc(100vh - 20px) !important; max-height:calc(100dvh - 20px) !important; }
     .tariff-grid, .payment-methods-grid { grid-template-columns:1fr !important; }
     .btn-row { flex-direction:column !important; }
     .btn { width:100% !important; }
@@ -1136,6 +1161,9 @@ include 'header.php';
                 <input class="form-input" type="text" id="offer_price" name="price" placeholder="Например, <?= number_format((float)$lot['price'] + 1000, 0, '.', ' ') ?>" required>
                 <div class="form-note" id="priceError" style="color:#dc2626; display:none;"><?= $lang === 'en' ? 'Price cannot be lower than the starting price' : 'Цена не может быть ниже начальной' ?></div>
             </div>
+            <div class="form-group"><label class="form-label" for="offer_email"><?= $lang === 'en' ? 'E-mail' : 'E-mail' ?></label><input class="form-input" type="email" id="offer_email" name="email" placeholder="<?= $lang === 'en' ? 'you@example.com' : 'you@example.com' ?>" required></div>
+            <div class="form-group"><label class="form-label" for="offer_contact_type"><?= $lang === 'en' ? 'Preferred contact method' : 'Удобный способ связи' ?></label><select class="form-select" id="offer_contact_type" name="contact_type" onchange="updateOfferContactPlaceholder()"><option value="phone"><?= $lang === 'en' ? 'Phone' : 'Телефон' ?></option><option value="email">E-mail</option><option value="telegram">Telegram</option></select></div>
+            <div class="form-group"><label class="form-label" for="offer_contact_value"><?= $lang === 'en' ? 'Contact details' : 'Контакт для связи' ?></label><input class="form-input" type="text" id="offer_contact_value" name="contact_value" placeholder="+7..." required></div>
             <div class="form-group"><label class="form-label" for="offer_comment"><?= $lang === 'en' ? 'Comment' : 'Комментарий' ?></label><textarea class="form-textarea" id="offer_comment" name="comment" placeholder="<?= $lang === 'en' ? 'Specify the terms, timeline, details of your offer' : 'Уточните условия, сроки, детали предложения' ?>"></textarea></div>
             <div class="form-group"><label class="form-label" for="offer_file"><?= $lang === 'en' ? 'File (optional)' : 'Файл (необязательно)' ?></label><input class="form-input" type="file" id="offer_file" name="offer_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"><div class="form-note"><?= $lang === 'en' ? 'Up to 3 MB.' : 'До 3 МБ.' ?></div></div>
             <!-- Опциональная подпись офера через ЭЦП. На время разработки скрыта.
@@ -1270,6 +1298,15 @@ function openModal(id) { const m=document.getElementById(id); if(m) { m.classLis
 function closeModal(id) { const m=document.getElementById(id); if(m) { m.classList.remove('active'); document.body.style.overflow=''; } }
 document.querySelectorAll('.modal').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m) closeModal(m.id); }); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal.active').forEach(m=>closeModal(m.id)); });
+
+function updateOfferContactPlaceholder() {
+    const sel = document.getElementById('offer_contact_type');
+    const inp = document.getElementById('offer_contact_value');
+    if (!sel || !inp) return;
+    const map = { phone: '+7 (___) ___-__-__', email: 'you@example.com', telegram: '@username' };
+    inp.placeholder = map[sel.value] || '';
+}
+document.addEventListener('DOMContentLoaded', updateOfferContactPlaceholder);
 
 let selectedTariff=null, currentAmount=0, currentTariffName='';
 
