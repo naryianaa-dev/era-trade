@@ -487,7 +487,7 @@ include 'header.php';
                                 ? 'Leave empty to use default 1390 ₽. Charged to buyers who request the inspection report.'
                                 : 'Оставьте пустым для значения по умолчанию 1390 ₽. Списывается с покупателей при заказе отчёта.' ?></div>
                         </div>
-                        
+
                         <div class="form-group">
                             <label><?= $lang === 'en' ? 'Lot description' : 'Описание лота' ?></label>
                             <textarea name="description" rows="4" placeholder="<?= $lang === 'en' ? 'Detailed description of the item, specifications, condition...' : 'Подробное описание товара, характеристики, состояние...' ?>"></textarea>

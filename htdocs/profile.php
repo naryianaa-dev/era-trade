@@ -407,9 +407,27 @@ try {
             .sidebar {
                 transform: translateX(-100%);
                 width: 260px;
+                padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+                gap: 4px;
             }
             .sidebar.open {
                 transform: translateX(0);
+            }
+            .sidebar .logo {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+            .sidebar nav {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .sidebar .nav-item {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            .sidebar > a[href="logout.php"] {
+                margin-top: 8px !important;
             }
             .main {
                 margin-left: 0 !important;
@@ -420,7 +438,7 @@ try {
             display: none;
             position: fixed;
             top: 12px;
-            left: 12px;
+            right: 12px;
             z-index: 1100;
             background: rgba(15,23,42,0.8);
             backdrop-filter: blur(8px);
@@ -790,7 +808,7 @@ try {
             <p style="color:var(--dim);font-size:13px;margin:0 0 16px;"><?= $lang === 'en' ? 'Minimum top-up RUB 7,000, in multiples of RUB 500.' : 'Минимальная сумма пополнения — 7 000 ₽, кратно 500 ₽.' ?></p>
             <div class="amounts" id="amounts-row">
                 <?php foreach ([7000,10000,15000,25000,50000,100000] as $a): ?>
-                <button class="amt-btn" onclick="selectAmt(<?= $a ?>)"><?= number_format($a, 0, '.', "\u{00A0}") ?>&nbsp;₽</button>
+                <button type="button" class="amt-btn" data-amt="<?= $a ?>" onclick="selectAmt(<?= $a ?>)"><?= number_format($a, 0, '.', "\u{00A0}") ?>&nbsp;₽</button>
                 <?php endforeach; ?>
             </div>
             <input class="field" type="number" id="custom-amount"
@@ -1447,8 +1465,9 @@ const UPGRADE_COST = 8000;
 function selectAmt(val) {
     selectedAmt = val;
     document.getElementById('custom-amount').value = '';
-    document.querySelectorAll('.amt-btn').forEach((b, i) => {
-        b.classList.toggle('selected', AMOUNTS_LIST[i] === val);
+    document.querySelectorAll('.amt-btn').forEach(b => {
+        const btnVal = parseInt(b.dataset.amt, 10);
+        b.classList.toggle('selected', btnVal === val);
     });
 }
 function deselectAmts() {

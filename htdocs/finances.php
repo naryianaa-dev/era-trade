@@ -8,9 +8,14 @@ if (!function_exists('getCommissionRate')) {
 
     /**
      * Получает ставку комиссии площадки для лота/организатора.
-     * Приоритет: лот → организатор → глобальная
+     * Приоритет: лот → организатор → глобальная (с учётом $auction_type).
+     *
+     * $auction_type:
+     *   - null        : обычный аукцион/RFP/RFQ и т.п. — дефолт 5%
+     *   - 'commission': комиссионная продажа (torgi_list.php) — дефолт 3%
      */
-    function getCommissionRate(PDO $pdo, int $lot_id = 0, int $user_id = 0): float {
+    function getCommissionRate(PDO $pdo, int $lot_id = 0, int $user_id = 0, ?string $auction_type = null): float {
+        $default_by_type = ($auction_type === 'commission') ? 3.0 : 5.0;
         try {
             // 1. Комиссия для конкретного лота
             if ($lot_id > 0) {
@@ -26,12 +31,33 @@ if (!function_exists('getCommissionRate')) {
                 $r = $s->fetchColumn();
                 if ($r !== false) return (float)$r;
             }
-            // 3. Глобальная
-            $s = $pdo->query("SELECT rate_pct FROM commission_settings WHERE user_id IS NULL AND lot_id IS NULL LIMIT 1");
-            $r = $s->fetchColumn();
-            return $r !== false ? (float)$r : 5.0;
+            // 3. Глобальная по типу торгов (commission_settings.auction_type)
+            if ($auction_type !== null && $auction_type !== '') {
+                $s = $pdo->prepare("SELECT rate_pct FROM commission_settings
+                                    WHERE user_id IS NULL AND lot_id IS NULL AND auction_type = ? LIMIT 1");
+                try { $s->execute([$auction_type]); } catch (Throwable $e) { $s = null; }
+                if ($s) {
+                    $r = $s->fetchColumn();
+                    if ($r !== false) return (float)$r;
+                }
+            }
+            // 4. Глобальная дефолтная (auction_type IS NULL).
+            //    Если колонки auction_type ещё нет — фолбэк на простой запрос.
+            try {
+                $s = $pdo->query("SELECT rate_pct FROM commission_settings
+                                  WHERE user_id IS NULL AND lot_id IS NULL
+                                    AND (auction_type IS NULL OR auction_type = '') LIMIT 1");
+                $r = $s ? $s->fetchColumn() : false;
+                if ($r !== false) return (float)$r;
+            } catch (Throwable $e) {
+                $s = $pdo->query("SELECT rate_pct FROM commission_settings
+                                  WHERE user_id IS NULL AND lot_id IS NULL LIMIT 1");
+                $r = $s ? $s->fetchColumn() : false;
+                if ($r !== false) return (float)$r;
+            }
+            return $default_by_type;
         } catch (Exception $e) {
-            return 5.0;
+            return $default_by_type;
         }
     }
 

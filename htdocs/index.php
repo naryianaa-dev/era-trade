@@ -62,7 +62,15 @@ header .msc-box .dot { background: #38bdf8 !important; box-shadow: 0 0 8px #38bd
 /* Переключатель языка. */
 header .lang-btn { color: #94a3b8 !important; }
 header .lang-btn.active { color: #38bdf8 !important; background: rgba(56,189,248,.1) !important; }
-/* Бургер на мобильных — белая иконка. */
+/* Бургер на мобильных — белая иконка без синей пилюли (тёмная 3D-тема на фоне). */
+header .burger-trigger {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    width: 44px !important;
+}
+header .burger-trigger:hover,
+header .burger-trigger:active { background: transparent !important; }
 header .burger-trigger i,
 header .burger-trigger svg { color: #ffffff !important; stroke: #ffffff !important; }
 /* Кнопка «Войти». */
@@ -1194,7 +1202,151 @@ setTimeout(() => {
         opacity: 1 !important; transform: none !important; transition: none !important;
     }
 }
+
+/* ---- PWA install chip (compact, mobile only) ---- */
+#pwaInstallChip{
+    position:fixed;
+    left:50%;
+    bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+    transform:translateX(-50%);
+    z-index:3000;
+    display:none;
+    align-items:center;
+    gap:6px;
+    padding:6px 6px 6px 12px;
+    background:rgba(15,23,42,.82);
+    color:#fff;
+    border:1px solid rgba(148,163,184,.28);
+    border-radius:999px;
+    box-shadow:0 8px 24px rgba(0,0,0,.28);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:13px;
+}
+#pwaInstallChip .pwa-chip-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 14px;
+    border:none;
+    border-radius:999px;
+    background:linear-gradient(180deg,#00a3f5 0%,#0088cc 100%);
+    color:#fff;
+    font-weight:700;
+    font-size:13px;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,136,204,.35);
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease, box-shadow .12s ease;
+}
+#pwaInstallChip .pwa-chip-btn .pwa-chip-icon{font-size:15px;line-height:1;}
+#pwaInstallChip .pwa-chip-btn:hover{box-shadow:0 3px 12px rgba(0,136,204,.5)}
+#pwaInstallChip .pwa-chip-btn:active{opacity:.85}
+#pwaInstallChip .pwa-chip-close{
+    width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+    background:transparent;border:none;color:#cbd5e1;
+    cursor:pointer;font-size:16px;line-height:1;padding:0;opacity:.8;
+    -webkit-tap-highlight-color:transparent;
+}
+#pwaInstallChip .pwa-chip-close:active{opacity:1}
+#pwaInstallChip.show{display:inline-flex}
+@media (display-mode:standalone){#pwaInstallChip{display:none !important}}
 </style>
+
+<!-- PWA install chip (mobile only, button-based) -->
+<?php if ($lang === 'en'): ?>
+<div id="pwaInstallChip" role="dialog" aria-label="Install app">
+    <button class="pwa-chip-btn" id="pwaInstallBtn" type="button"><span class="pwa-chip-icon">📱</span><span>Install</span></button>
+    <button class="pwa-chip-close" id="pwaInstallClose" type="button" aria-label="Dismiss">×</button>
+</div>
+<?php else: ?>
+<div id="pwaInstallChip" role="dialog" aria-label="Установить приложение">
+    <button class="pwa-chip-btn" id="pwaInstallBtn" type="button"><span class="pwa-chip-icon">📱</span><span>Установить</span></button>
+    <button class="pwa-chip-close" id="pwaInstallClose" type="button" aria-label="Закрыть">×</button>
+</div>
+<?php endif; ?>
+
+<script>
+/* PWA install chip — показывается на всех мобильных устройствах.
+   Android Chrome/Edge: клик → нативный диалог Install (beforeinstallprompt).
+   iOS Safari: клик → системный Share-лист через navigator.share(),
+               где выбирается «Add to Home Screen». Это единственный
+               способ подойти к установке на iOS без текстовой инструкции.
+   Скрываем, если уже установлено (display-mode:standalone /
+   navigator.standalone) или пользователь закрыл (помним 7 суток). */
+(function(){
+    var chip = document.getElementById('pwaInstallChip');
+    if (!chip) return;
+    var btn      = document.getElementById('pwaInstallBtn');
+    var closeBtn = document.getElementById('pwaInstallClose');
+
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    /* Мобильный если UA мобильный или окно узкое (<=900px). */
+    var isMobile = /iPhone|iPad|iPod|Android|Mobile/i.test(ua)
+                 || window.matchMedia('(max-width: 900px)').matches;
+    var isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+    if (!isMobile || isStandalone) return;
+
+    var deferredPrompt = null;
+    function showChip(){chip.classList.add('show')}
+    function hideChip(){chip.classList.remove('show')}
+
+    /* Android Chrome/Edge: ловим событие, показываем чип. */
+    window.addEventListener('beforeinstallprompt', function(e){
+        e.preventDefault();
+        deferredPrompt = e;
+        showChip();
+    });
+
+    /* iOS Safari не стреляет beforeinstallprompt — показываем чип сразу. */
+    if (isIOS) showChip();
+
+    window.addEventListener('appinstalled', function(){
+        hideChip();
+        deferredPrompt = null;
+    });
+
+    function tryInstall(){
+        /* 1) Android Chrome/Edge with captured beforeinstallprompt — native install dialog. */
+        if (deferredPrompt) {
+            try {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(function(choice){
+                    console.log('PWA userChoice:', choice && choice.outcome);
+                    deferredPrompt = null;
+                    hideChip();
+                }).catch(function(err){ console.warn('PWA userChoice err', err); });
+                return;
+            } catch(err) {
+                console.warn('PWA prompt threw', err);
+                deferredPrompt = null;
+            }
+        }
+        /* 2) Web Share API (iOS Safari 16+, modern Android Chrome) —
+              opens system share sheet (may include Add to Home Screen). */
+        if (navigator.share) {
+            try {
+                navigator.share({
+                    title: document.title || 'ЭРА ЭТП',
+                    url: location.origin + '/'
+                }).catch(function(err){ console.warn('PWA share rejected', err); });
+                return;
+            } catch(err) { console.warn('PWA share threw', err); }
+        }
+        /* 3) No install path available (e.g. WebView) — just hide the chip.
+              Do NOT open manifest URL (it renders as raw JSON). */
+        hideChip();
+    }
+    if (btn) btn.addEventListener('click', tryInstall);
+
+    if (closeBtn) closeBtn.addEventListener('click', hideChip);
+})();
+</script>
 
 </body>
 </html>

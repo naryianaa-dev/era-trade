@@ -59,6 +59,34 @@ try {
         }
     }
 
+    // Миграция users.credit_bids_remaining — гарантируем дефолт 5
+    // (5 кредитных ставок по умолчанию каждому участнику; при исчерпании лимита
+    // во время скандинавского аукциона можно только купить пакет 10 ставок).
+    try {
+        $st = $pdo->query("SHOW COLUMNS FROM users LIKE 'credit_bids_remaining'");
+        $row = $st ? $st->fetch() : null;
+        if (!$row) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN credit_bids_remaining INT NOT NULL DEFAULT 5");
+        } else {
+            // Колонка существует — проверяем дефолт. Если != 5, выставляем.
+            $needs_default = true;
+            if (isset($row['Default']) && (string)$row['Default'] === '5') $needs_default = false;
+            if ($needs_default) {
+                try { $pdo->exec("ALTER TABLE users ALTER COLUMN credit_bids_remaining SET DEFAULT 5"); }
+                catch (Throwable $e) {
+                    // MySQL <8 fallback
+                    try { $pdo->exec("ALTER TABLE users MODIFY COLUMN credit_bids_remaining INT NOT NULL DEFAULT 5"); }
+                    catch (Throwable $e2) { error_log('credit_bids_remaining default: ' . $e2->getMessage()); }
+                }
+            }
+        }
+        // Старые записи с NULL получают дефолт.
+        try { $pdo->exec("UPDATE users SET credit_bids_remaining = 5 WHERE credit_bids_remaining IS NULL"); }
+        catch (Throwable $e) {}
+    } catch (Throwable $e) {
+        error_log('db_schema_extra (credit_bids_remaining) error: ' . $e->getMessage());
+    }
+
     // Миграция: старые лоты, оставшиеся со статусом 'draft' от прошлых
     // версий add_lot.php, не появлялись в реестре ни под одним фильтром.
     // Переводим их в 'active' — фильтры reestr.php различают этап жизненного
