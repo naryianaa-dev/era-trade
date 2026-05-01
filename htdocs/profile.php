@@ -808,7 +808,7 @@ try {
             <p style="color:var(--dim);font-size:13px;margin:0 0 16px;"><?= $lang === 'en' ? 'Minimum top-up RUB 7,000, in multiples of RUB 500.' : 'Минимальная сумма пополнения — 7 000 ₽, кратно 500 ₽.' ?></p>
             <div class="amounts" id="amounts-row">
                 <?php foreach ([7000,10000,15000,25000,50000,100000] as $a): ?>
-                <button class="amt-btn" onclick="selectAmt(<?= $a ?>)"><?= number_format($a, 0, '.', "\u{00A0}") ?>&nbsp;₽</button>
+                <button type="button" class="amt-btn" data-amt="<?= $a ?>" onclick="selectAmt(<?= $a ?>)"><?= number_format($a, 0, '.', "\u{00A0}") ?>&nbsp;₽</button>
                 <?php endforeach; ?>
             </div>
             <input class="field" type="number" id="custom-amount"
