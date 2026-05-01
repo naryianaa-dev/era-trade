@@ -407,9 +407,27 @@ try {
             .sidebar {
                 transform: translateX(-100%);
                 width: 260px;
+                padding: 16px 14px calc(16px + env(safe-area-inset-bottom, 0px));
+                gap: 4px;
             }
             .sidebar.open {
                 transform: translateX(0);
+            }
+            .sidebar .logo {
+                font-size: 18px;
+                margin-bottom: 6px;
+            }
+            .sidebar nav {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .sidebar .nav-item {
+                padding: 8px 10px;
+                font-size: 14px;
+            }
+            .sidebar > a[href="logout.php"] {
+                margin-top: 8px !important;
             }
             .main {
                 margin-left: 0 !important;
