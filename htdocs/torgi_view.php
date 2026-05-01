@@ -228,7 +228,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'make_
     $comment       = trim($_POST['comment'] ?? '');
     $offer_email   = trim($_POST['email'] ?? '');
     $contact_type  = trim($_POST['contact_type'] ?? 'phone');
-    if (!in_array($contact_type, ['phone','email','telegram'], true)) $contact_type = 'phone';
+    if (!in_array($contact_type, ['phone','telegram'], true)) $contact_type = 'phone';
     $contact_value = trim($_POST['contact_value'] ?? '');
     if ($lot_id <= 0 || $offer_price <= 0) {
         setLotMsg('Укажите корректную цену', $lot_id);
@@ -1162,7 +1162,7 @@ include 'header.php';
                 <div class="form-note" id="priceError" style="color:#dc2626; display:none;"><?= $lang === 'en' ? 'Price cannot be lower than the starting price' : 'Цена не может быть ниже начальной' ?></div>
             </div>
             <div class="form-group"><label class="form-label" for="offer_email"><?= $lang === 'en' ? 'E-mail' : 'E-mail' ?></label><input class="form-input" type="email" id="offer_email" name="email" placeholder="<?= $lang === 'en' ? 'you@example.com' : 'you@example.com' ?>" required></div>
-            <div class="form-group"><label class="form-label" for="offer_contact_type"><?= $lang === 'en' ? 'Preferred contact method' : 'Удобный способ связи' ?></label><select class="form-select" id="offer_contact_type" name="contact_type" onchange="updateOfferContactPlaceholder()"><option value="phone"><?= $lang === 'en' ? 'Phone' : 'Телефон' ?></option><option value="email">E-mail</option><option value="telegram">Telegram</option></select></div>
+            <div class="form-group"><label class="form-label" for="offer_contact_type"><?= $lang === 'en' ? 'Preferred contact method' : 'Удобный способ связи' ?></label><select class="form-select" id="offer_contact_type" name="contact_type" onchange="updateOfferContactPlaceholder()"><option value="phone"><?= $lang === 'en' ? 'Phone' : 'Телефон' ?></option><option value="telegram">Telegram</option></select></div>
             <div class="form-group"><label class="form-label" for="offer_contact_value"><?= $lang === 'en' ? 'Contact details' : 'Контакт для связи' ?></label><input class="form-input" type="text" id="offer_contact_value" name="contact_value" placeholder="+7..." required></div>
             <div class="form-group"><label class="form-label" for="offer_comment"><?= $lang === 'en' ? 'Comment' : 'Комментарий' ?></label><textarea class="form-textarea" id="offer_comment" name="comment" placeholder="<?= $lang === 'en' ? 'Specify the terms, timeline, details of your offer' : 'Уточните условия, сроки, детали предложения' ?>"></textarea></div>
             <div class="form-group"><label class="form-label" for="offer_file"><?= $lang === 'en' ? 'File (optional)' : 'Файл (необязательно)' ?></label><input class="form-input" type="file" id="offer_file" name="offer_file" accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx"><div class="form-note"><?= $lang === 'en' ? 'Up to 3 MB.' : 'До 3 МБ.' ?></div></div>
@@ -1303,7 +1303,7 @@ function updateOfferContactPlaceholder() {
     const sel = document.getElementById('offer_contact_type');
     const inp = document.getElementById('offer_contact_value');
     if (!sel || !inp) return;
-    const map = { phone: '+7 (___) ___-__-__', email: 'you@example.com', telegram: '@username' };
+    const map = { phone: '+7 (___) ___-__-__', telegram: '@username' };
     inp.placeholder = map[sel.value] || '';
 }
 document.addEventListener('DOMContentLoaded', updateOfferContactPlaceholder);

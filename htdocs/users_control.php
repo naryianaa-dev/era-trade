@@ -84,27 +84,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => true, 'msg' => 'Тип: ' . $labels[$type]]);
 
     } elseif ($action === 'set_commission') {
-        $rate    = max(0, min(50, (float)($_POST['rate'] ?? 5)));
-        $lot_id  = (int)($_POST['lot_id_comm'] ?? 0);
-        $for_uid = (int)($_POST['for_user_id'] ?? 0);
+        $rate         = max(0, min(50, (float)($_POST['rate'] ?? 5)));
+        $lot_id       = (int)($_POST['lot_id_comm'] ?? 0);
+        $for_uid      = (int)($_POST['for_user_id'] ?? 0);
+        $auction_type = trim($_POST['auction_type'] ?? '');
+        /* Разрешены только типы, которые нужны UI: '' (глобал по умолчанию) и 'commission'.
+           Если потребуются ещё типы — расширить этот список. */
+        if (!in_array($auction_type, ['', 'commission'], true)) $auction_type = '';
+        $at_sql = ($auction_type === '') ? null : $auction_type;
 
-        $existing = $pdo->prepare(
-            "SELECT id FROM commission_settings WHERE " .
-            ($lot_id > 0 ? "lot_id=?" : ($for_uid > 0 ? "user_id=? AND lot_id IS NULL" : "user_id IS NULL AND lot_id IS NULL"))
-        );
-        $existing->execute($lot_id > 0 ? [$lot_id] : ($for_uid > 0 ? [$for_uid] : []));
-
-        if ($existing->fetch()) {
-            if ($lot_id > 0) {
-                $pdo->prepare("UPDATE commission_settings SET rate_pct=? WHERE lot_id=?")->execute([$rate, $lot_id]);
-            } elseif ($for_uid > 0) {
-                $pdo->prepare("UPDATE commission_settings SET rate_pct=? WHERE user_id=? AND lot_id IS NULL")->execute([$rate, $for_uid]);
-            } else {
-                $pdo->prepare("UPDATE commission_settings SET rate_pct=? WHERE user_id IS NULL AND lot_id IS NULL")->execute([$rate]);
-            }
+        if ($lot_id > 0) {
+            $existing = $pdo->prepare("SELECT id FROM commission_settings WHERE lot_id=?");
+            $existing->execute([$lot_id]);
+        } elseif ($for_uid > 0) {
+            $existing = $pdo->prepare("SELECT id FROM commission_settings WHERE user_id=? AND lot_id IS NULL");
+            $existing->execute([$for_uid]);
         } else {
-            $pdo->prepare("INSERT INTO commission_settings (user_id, lot_id, rate_pct) VALUES (?,?,?)")
-                ->execute([$for_uid ?: null, $lot_id ?: null, $rate]);
+            /* Глобальный ряд по типу торгов. */
+            if ($at_sql === null) {
+                $existing = $pdo->prepare("SELECT id FROM commission_settings
+                                           WHERE user_id IS NULL AND lot_id IS NULL
+                                             AND (auction_type IS NULL OR auction_type = '')");
+                $existing->execute();
+            } else {
+                $existing = $pdo->prepare("SELECT id FROM commission_settings
+                                           WHERE user_id IS NULL AND lot_id IS NULL AND auction_type = ?");
+                $existing->execute([$at_sql]);
+            }
+        }
+        $row = $existing->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            $pdo->prepare("UPDATE commission_settings SET rate_pct=? WHERE id=?")
+                ->execute([$rate, (int)$row['id']]);
+        } else {
+            $pdo->prepare("INSERT INTO commission_settings (user_id, lot_id, auction_type, rate_pct) VALUES (?,?,?,?)")
+                ->execute([$for_uid ?: null, $lot_id ?: null, $at_sql, $rate]);
         }
         echo json_encode(['success' => true, 'msg' => "Комиссия {$rate}% сохранена"]);
 
@@ -137,19 +152,59 @@ try {
         rate_pct DECIMAL(5,2) NOT NULL DEFAULT 5.00,
         UNIQUE KEY uniq_global (user_id, lot_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    // Seed глобального значения, если его ещё нет.
-    $existing = $pdo->query("SELECT id FROM commission_settings WHERE user_id IS NULL AND lot_id IS NULL LIMIT 1")->fetchColumn();
+    // Миграция: auction_type для разделения глобальной комиссии
+    // по типу торгов (NULL = дефолтный 5%, 'commission' = комиссионная продажа 3%).
+    $cols = $pdo->query("SHOW COLUMNS FROM commission_settings")->fetchAll(PDO::FETCH_COLUMN);
+    if (!in_array('auction_type', $cols, true)) {
+        $pdo->exec("ALTER TABLE commission_settings ADD COLUMN auction_type VARCHAR(32) NULL AFTER lot_id");
+    }
+    // Пересобираем UNIQUE KEY так, чтобы он включал auction_type
+    // (иначе не получится хранить и глобал по умолчанию, и глобал комиссионной продажи в одной таблице).
+    try {
+        $idx = $pdo->query("SHOW INDEX FROM commission_settings WHERE Key_name = 'uniq_global'")->fetchAll(PDO::FETCH_ASSOC);
+        $has_auction_type_in_idx = false;
+        foreach ($idx as $row) {
+            if (($row['Column_name'] ?? '') === 'auction_type') { $has_auction_type_in_idx = true; break; }
+        }
+        if ($idx && !$has_auction_type_in_idx) {
+            $pdo->exec("ALTER TABLE commission_settings DROP INDEX uniq_global");
+            $pdo->exec("ALTER TABLE commission_settings ADD UNIQUE KEY uniq_global (user_id, lot_id, auction_type)");
+        }
+    } catch (Throwable $e) {
+        error_log('users_control.commission_settings index-migrate: ' . $e->getMessage());
+    }
+    // Seed глобального значения (5%), если его ещё нет.
+    $existing = $pdo->query("SELECT id FROM commission_settings
+                             WHERE user_id IS NULL AND lot_id IS NULL
+                               AND (auction_type IS NULL OR auction_type = '')
+                             LIMIT 1")->fetchColumn();
     if (!$existing) {
-        $pdo->exec("INSERT INTO commission_settings (user_id, lot_id, rate_pct) VALUES (NULL, NULL, 5.00)");
+        $pdo->exec("INSERT INTO commission_settings (user_id, lot_id, auction_type, rate_pct) VALUES (NULL, NULL, NULL, 5.00)");
+    }
+    // Seed значения для комиссионной продажи (3%), если его ещё нет.
+    $existing_comm = $pdo->query("SELECT id FROM commission_settings
+                                  WHERE user_id IS NULL AND lot_id IS NULL
+                                    AND auction_type = 'commission'
+                                  LIMIT 1")->fetchColumn();
+    if (!$existing_comm) {
+        $pdo->exec("INSERT INTO commission_settings (user_id, lot_id, auction_type, rate_pct) VALUES (NULL, NULL, 'commission', 3.00)");
     }
 } catch (Throwable $e) {
     error_log('users_control.commission_settings bootstrap: ' . $e->getMessage());
 }
 
 $global_comm = $pdo->query(
-    "SELECT rate_pct FROM commission_settings WHERE user_id IS NULL AND lot_id IS NULL LIMIT 1"
+    "SELECT rate_pct FROM commission_settings
+     WHERE user_id IS NULL AND lot_id IS NULL
+       AND (auction_type IS NULL OR auction_type = '') LIMIT 1"
 )->fetchColumn();
 $global_comm = ($global_comm === false || $global_comm === null) ? 5 : (float)$global_comm;
+
+$comm_sale_comm = $pdo->query(
+    "SELECT rate_pct FROM commission_settings
+     WHERE user_id IS NULL AND lot_id IS NULL AND auction_type = 'commission' LIMIT 1"
+)->fetchColumn();
+$comm_sale_comm = ($comm_sale_comm === false || $comm_sale_comm === null) ? 3 : (float)$comm_sale_comm;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -216,9 +271,9 @@ $global_comm = ($global_comm === false || $global_comm === null) ? 5 : (float)$g
 <a class="back-link" href="reestr.php">← Реестр</a>
 <h2>👥 Управление пользователями</h2>
 
-<!-- Глобальная комиссия (для всех типов торгов) -->
+<!-- Глобальная комиссия оператора для аукционов и запросов -->
 <div class="global-comm">
-    <label>Глобальная комиссия оператора (для всех типов торгов):</label>
+    <label>Глобальная комиссия оператора (аукционы и запросы):</label>
     <input type="number" id="global-rate" value="<?= htmlspecialchars((string)$global_comm) ?>" min="0" max="50" step="0.5">
     <span style="color:#64748b;">%</span>
     <button class="btn btn-blue btn-sm" onclick="setGlobalComm()">Сохранить</button>
@@ -226,8 +281,23 @@ $global_comm = ($global_comm === false || $global_comm === null) ? 5 : (float)$g
 </div>
 <div style="margin:-16px 0 20px;color:#64748b;font-size:12px;line-height:1.5;">
     Применяется к аукциону, скандинавскому аукциону, аукциону на понижение,
-    закрытому аукциону, запросу котировок/предложений и комиссионным продажам.
+    закрытому аукциону и запросу котировок/предложений.
     По умолчанию 5%. Ставка по конкретному лоту или организатору имеет приоритет
+    над этим значением.
+</div>
+
+<!-- Глобальная комиссия оператора для комиссионной продажи -->
+<div class="global-comm">
+    <label>Комиссия оператора по комиссионной продаже:</label>
+    <input type="number" id="commsale-rate" value="<?= htmlspecialchars((string)$comm_sale_comm) ?>" min="0" max="50" step="0.5">
+    <span style="color:#64748b;">%</span>
+    <button class="btn btn-blue btn-sm" onclick="setCommSaleComm()">Сохранить</button>
+    <span id="commsale-msg" style="font-size:12px;color:#4ade80;"></span>
+</div>
+<div style="margin:-16px 0 20px;color:#64748b;font-size:12px;line-height:1.5;">
+    Применяется к лотам, размещённым в реестре комиссионной продажи
+    (<a href="torgi_list.php" style="color:#60a5fa;">torgi_list.php</a>).
+    По умолчанию 3%. Ставка по конкретному лоту или организатору имеет приоритет
     над этим значением.
 </div>
 
@@ -345,8 +415,17 @@ function post(data, cb) {
 
 function setGlobalComm() {
     const rate = document.getElementById('global-rate').value;
-    post({action:'set_commission', user_id:1, rate, for_user_id:'', lot_id_comm:''}, d => {
+    post({action:'set_commission', user_id:1, rate, for_user_id:'', lot_id_comm:'', auction_type:''}, d => {
         const m = document.getElementById('comm-msg');
+        m.textContent = d.success ? '✅ Сохранено' : ('❌ ' + (d.error||d.msg));
+        m.style.color = d.success ? '#4ade80' : '#f87171';
+    });
+}
+
+function setCommSaleComm() {
+    const rate = document.getElementById('commsale-rate').value;
+    post({action:'set_commission', user_id:1, rate, for_user_id:'', lot_id_comm:'', auction_type:'commission'}, d => {
+        const m = document.getElementById('commsale-msg');
         m.textContent = d.success ? '✅ Сохранено' : ('❌ ' + (d.error||d.msg));
         m.style.color = d.success ? '#4ade80' : '#f87171';
     });

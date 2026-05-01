@@ -1202,7 +1202,139 @@ setTimeout(() => {
         opacity: 1 !important; transform: none !important; transition: none !important;
     }
 }
+
+/* ---- PWA install banner (only on mobile, bottom of screen) ---- */
+#pwaInstallBanner {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: 0;
+    z-index: 3000;
+    display: none;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(135deg, #0088cc, #38bdf8);
+    color: #fff;
+    box-shadow: 0 -6px 20px rgba(0,0,0,.35);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+#pwaInstallBanner .pwa-row {
+    display: flex; align-items: center; gap: 12px;
+    max-width: 640px; margin: 0 auto;
+}
+#pwaInstallBanner .pwa-icon {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+}
+#pwaInstallBanner .pwa-text {
+    flex: 1; min-width: 0; font-size: 13px; line-height: 1.3;
+}
+#pwaInstallBanner .pwa-text b { font-weight: 800; font-size: 14px; display: block; margin-bottom: 2px; }
+#pwaInstallBanner .pwa-btn {
+    flex-shrink: 0; padding: 9px 14px; border: none; border-radius: 8px;
+    background: #fff; color: #0088cc; font-weight: 800; font-size: 13px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; white-space: nowrap;
+}
+#pwaInstallBanner .pwa-btn:active { opacity: .8; }
+#pwaInstallBanner .pwa-close {
+    flex-shrink: 0; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: none; color: #fff; cursor: pointer; opacity: .85; font-size: 20px; line-height: 1;
+    padding: 0; margin-left: 2px; -webkit-tap-highlight-color: transparent;
+}
+@media (max-width: 640px) { #pwaInstallBanner.show { display: block; } }
+@media (display-mode: standalone) { #pwaInstallBanner { display: none !important; } }
 </style>
+
+<!-- PWA install prompt (mobile only) -->
+<?php if ($lang === 'en'): ?>
+<div id="pwaInstallBanner" role="dialog" aria-label="Install app">
+    <div class="pwa-row">
+        <div class="pwa-icon">📲</div>
+        <div class="pwa-text">
+            <b>Install ERA ETP</b>
+            <span id="pwaInstallHint">Add to Home Screen for instant access.</span>
+        </div>
+        <button class="pwa-btn" id="pwaInstallBtn" type="button">Install</button>
+        <button class="pwa-close" id="pwaInstallClose" type="button" aria-label="Dismiss">×</button>
+    </div>
+</div>
+<?php else: ?>
+<div id="pwaInstallBanner" role="dialog" aria-label="Установить приложение">
+    <div class="pwa-row">
+        <div class="pwa-icon">📲</div>
+        <div class="pwa-text">
+            <b>Установить ЭРА ЭТП</b>
+            <span id="pwaInstallHint">Добавьте на экран «Домой» для быстрого входа.</span>
+        </div>
+        <button class="pwa-btn" id="pwaInstallBtn" type="button">Установить</button>
+        <button class="pwa-close" id="pwaInstallClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+</div>
+<?php endif; ?>
+
+<script>
+(function(){
+    var banner = document.getElementById('pwaInstallBanner');
+    if (!banner) return;
+    var btn      = document.getElementById('pwaInstallBtn');
+    var closeBtn = document.getElementById('pwaInstallClose');
+    var hint     = document.getElementById('pwaInstallHint');
+    var lang     = (document.documentElement.lang || 'ru').toLowerCase().startsWith('en') ? 'en' : 'ru';
+    var isMobile = window.matchMedia('(max-width: 640px)').matches;
+    var isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true;
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    var DISMISS_KEY = 'pwaInstallDismissedAt';
+    var DISMISS_TTL = 7 * 24 * 60 * 60 * 1000;
+    var dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
+    var wasDismissed = dismissedAt && (Date.now() - dismissedAt < DISMISS_TTL);
+    if (!isMobile || isStandalone || wasDismissed) return;
+
+    var deferredPrompt = null;
+    function showBanner() { banner.classList.add('show'); }
+    function hideBanner() { banner.classList.remove('show'); }
+
+    window.addEventListener('beforeinstallprompt', function(e){
+        e.preventDefault();
+        deferredPrompt = e;
+        if (hint) hint.textContent = lang === 'en'
+            ? 'Add to Home Screen for instant access.'
+            : 'Добавьте на экран «Домой» для быстрого входа.';
+        if (btn) btn.style.display = '';
+        showBanner();
+    });
+
+    window.addEventListener('appinstalled', function(){
+        hideBanner();
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+        deferredPrompt = null;
+    });
+
+    if (btn) btn.addEventListener('click', function(){
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(){
+                deferredPrompt = null;
+                hideBanner();
+            });
+        }
+    });
+
+    if (closeBtn) closeBtn.addEventListener('click', function(){
+        hideBanner();
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    });
+
+    if (isIOS) {
+        if (hint) hint.innerHTML = lang === 'en'
+            ? 'Tap <b>Share</b> → <b>Add to Home Screen</b>.'
+            : 'Нажмите <b>Поделиться</b> → <b>На экран «Домой»</b>.';
+        if (btn) btn.style.display = 'none';
+        showBanner();
+    }
+})();
+</script>
 
 </body>
 </html>

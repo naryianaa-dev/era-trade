@@ -420,7 +420,7 @@ try {
             display: none;
             position: fixed;
             top: 12px;
-            left: 12px;
+            right: 12px;
             z-index: 1100;
             background: rgba(15,23,42,0.8);
             backdrop-filter: blur(8px);
