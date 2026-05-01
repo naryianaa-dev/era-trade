@@ -1225,16 +1225,24 @@ setTimeout(() => {
     font-size:13px;
 }
 #pwaInstallChip .pwa-chip-btn{
-    padding:6px 12px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 14px;
     border:none;
     border-radius:999px;
-    background:#0088cc;
+    background:linear-gradient(180deg,#00a3f5 0%,#0088cc 100%);
     color:#fff;
     font-weight:700;
-    font-size:12px;
+    font-size:13px;
+    line-height:1;
     cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,136,204,.35);
     -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease, box-shadow .12s ease;
 }
+#pwaInstallChip .pwa-chip-btn .pwa-chip-icon{font-size:15px;line-height:1;}
+#pwaInstallChip .pwa-chip-btn:hover{box-shadow:0 3px 12px rgba(0,136,204,.5)}
 #pwaInstallChip .pwa-chip-btn:active{opacity:.85}
 #pwaInstallChip .pwa-chip-close{
     width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
@@ -1250,12 +1258,12 @@ setTimeout(() => {
 <!-- PWA install chip (mobile only, button-based) -->
 <?php if ($lang === 'en'): ?>
 <div id="pwaInstallChip" role="dialog" aria-label="Install app">
-    <button class="pwa-chip-btn" id="pwaInstallBtn" type="button">Install</button>
+    <button class="pwa-chip-btn" id="pwaInstallBtn" type="button"><span class="pwa-chip-icon">📱</span><span>Install</span></button>
     <button class="pwa-chip-close" id="pwaInstallClose" type="button" aria-label="Dismiss">×</button>
 </div>
 <?php else: ?>
 <div id="pwaInstallChip" role="dialog" aria-label="Установить приложение">
-    <button class="pwa-chip-btn" id="pwaInstallBtn" type="button">Установить</button>
+    <button class="pwa-chip-btn" id="pwaInstallBtn" type="button"><span class="pwa-chip-icon">📱</span><span>Установить</span></button>
     <button class="pwa-chip-close" id="pwaInstallClose" type="button" aria-label="Закрыть">×</button>
 </div>
 <?php endif; ?>
@@ -1304,12 +1312,10 @@ setTimeout(() => {
     });
 
     function tryInstall(){
+        /* 1) Android Chrome/Edge with captured beforeinstallprompt — native install dialog. */
         if (deferredPrompt) {
             try {
-                var p = deferredPrompt.prompt();
-                if (p && typeof p.then === 'function') {
-                    p.catch(function(err){ console.warn('PWA prompt() rejected', err); });
-                }
+                deferredPrompt.prompt();
                 deferredPrompt.userChoice.then(function(choice){
                     console.log('PWA userChoice:', choice && choice.outcome);
                     deferredPrompt = null;
@@ -1321,16 +1327,20 @@ setTimeout(() => {
                 deferredPrompt = null;
             }
         }
+        /* 2) Web Share API (iOS Safari 16+, modern Android Chrome) —
+              opens system share sheet (may include Add to Home Screen). */
         if (navigator.share) {
-            navigator.share({
-                title: document.title || 'ЭРА ЭТП',
-                url: location.origin + '/'
-            }).then(function(){ hideChip(); })
-              .catch(function(err){ console.warn('PWA share rejected', err); });
-            return;
+            try {
+                navigator.share({
+                    title: document.title || 'ЭРА ЭТП',
+                    url: location.origin + '/'
+                }).catch(function(err){ console.warn('PWA share rejected', err); });
+                return;
+            } catch(err) { console.warn('PWA share threw', err); }
         }
-        /* Fallback: open manifest URL, browser may show add-to-home UI. */
-        window.location.href = '/manifest.webmanifest';
+        /* 3) No install path available (e.g. WebView) — just hide the chip.
+              Do NOT open manifest URL (it renders as raw JSON). */
+        hideChip();
     }
     if (btn) btn.addEventListener('click', tryInstall);
 
