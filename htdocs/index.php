@@ -1243,20 +1243,18 @@ setTimeout(() => {
     -webkit-tap-highlight-color:transparent;
 }
 #pwaInstallChip .pwa-chip-close:active{opacity:1}
-@media (max-width:640px){#pwaInstallChip.show{display:inline-flex}}
+#pwaInstallChip.show{display:inline-flex}
 @media (display-mode:standalone){#pwaInstallChip{display:none !important}}
 </style>
 
 <!-- PWA install chip (mobile only, button-based) -->
 <?php if ($lang === 'en'): ?>
 <div id="pwaInstallChip" role="dialog" aria-label="Install app">
-    <span>Install app</span>
     <button class="pwa-chip-btn" id="pwaInstallBtn" type="button">Install</button>
     <button class="pwa-chip-close" id="pwaInstallClose" type="button" aria-label="Dismiss">×</button>
 </div>
 <?php else: ?>
 <div id="pwaInstallChip" role="dialog" aria-label="Установить приложение">
-    <span>Приложение ЭРА ЭТП</span>
     <button class="pwa-chip-btn" id="pwaInstallBtn" type="button">Установить</button>
     <button class="pwa-chip-close" id="pwaInstallClose" type="button" aria-label="Закрыть">×</button>
 </div>
@@ -1305,20 +1303,36 @@ setTimeout(() => {
         deferredPrompt = null;
     });
 
-    if (btn) btn.addEventListener('click', function(){
+    function tryInstall(){
         if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(function(){
+            try {
+                var p = deferredPrompt.prompt();
+                if (p && typeof p.then === 'function') {
+                    p.catch(function(err){ console.warn('PWA prompt() rejected', err); });
+                }
+                deferredPrompt.userChoice.then(function(choice){
+                    console.log('PWA userChoice:', choice && choice.outcome);
+                    deferredPrompt = null;
+                    hideChip();
+                }).catch(function(err){ console.warn('PWA userChoice err', err); });
+                return;
+            } catch(err) {
+                console.warn('PWA prompt threw', err);
                 deferredPrompt = null;
-                hideChip();
-            });
-        } else if (navigator.share) {
+            }
+        }
+        if (navigator.share) {
             navigator.share({
                 title: document.title || 'ЭРА ЭТП',
                 url: location.origin + '/'
-            }).catch(function(){});
+            }).then(function(){ hideChip(); })
+              .catch(function(err){ console.warn('PWA share rejected', err); });
+            return;
         }
-    });
+        /* Fallback: open manifest URL, browser may show add-to-home UI. */
+        window.location.href = '/manifest.webmanifest';
+    }
+    if (btn) btn.addEventListener('click', tryInstall);
 
     if (closeBtn) closeBtn.addEventListener('click', hideChip);
 })();
