@@ -73,6 +73,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $report_price_raw = $_POST['report_price'] ?? '';
     $report_price = ($report_price_raw !== '' && is_numeric($report_price_raw))
         ? max(0, (int)$report_price_raw) : null;
+
+    /* Комиссия оператора (площадки) с организатора при публикации лота.
+       По умолчанию 5%; организатор может скорректировать в пределах 0–50%.
+       Сохраняется в commission_settings с rate_pct, ключом lot_id (берётся
+       getCommissionRate() в финансовом движке). */
+    $commission_pct_raw = $_POST['commission_pct'] ?? '';
+    $commission_pct = ($commission_pct_raw !== '' && is_numeric($commission_pct_raw))
+        ? max(0.0, min(50.0, (float)$commission_pct_raw)) : 5.0;
     
     // Валидация
     $errors = [];
@@ -183,7 +191,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             
             $new_id = $pdo->lastInsertId();
-            
+
+            // Сохраняем комиссию оператора для этого лота (5% по умолчанию).
+            try {
+                $pdo->exec("CREATE TABLE IF NOT EXISTS commission_settings (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NULL,
+                    lot_id INT NULL,
+                    rate_pct DECIMAL(5,2) NOT NULL DEFAULT 5.00,
+                    UNIQUE KEY uniq_lot (lot_id),
+                    UNIQUE KEY uniq_user (user_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                $pdo->prepare(
+                    "INSERT INTO commission_settings (user_id, lot_id, rate_pct) VALUES (NULL, ?, ?)
+                     ON DUPLICATE KEY UPDATE rate_pct = VALUES(rate_pct)"
+                )->execute([$new_id, $commission_pct]);
+            } catch (Throwable $e) {
+                error_log('add_lot.commission_settings: ' . $e->getMessage());
+            }
+
             // Перенаправление в зависимости от типа
             $redirect_url = "lot_details.php?id={$new_id}";
             if ($auction_type === 'scandinavian') {
@@ -486,6 +512,14 @@ include 'header.php';
                             <div class="hint"><?= $lang === 'en'
                                 ? 'Leave empty to use default 1390 ₽. Charged to buyers who request the inspection report.'
                                 : 'Оставьте пустым для значения по умолчанию 1390 ₽. Списывается с покупателей при заказе отчёта.' ?></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label><?= $lang === 'en' ? 'Operator commission, %' : 'Комиссия оператора, %' ?></label>
+                            <input type="number" name="commission_pct" step="0.01" min="0" max="50" value="5" placeholder="5">
+                            <div class="hint"><?= $lang === 'en'
+                                ? 'Platform commission charged to the organizer on the final amount. Default 5%.'
+                                : 'Комиссия площадки, удерживаемая с организатора от итоговой суммы. По умолчанию 5%.' ?></div>
                         </div>
                         
                         <div class="form-group">
