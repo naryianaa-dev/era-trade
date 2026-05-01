@@ -1276,22 +1276,19 @@ setTimeout(() => {
     var btn      = document.getElementById('pwaInstallBtn');
     var closeBtn = document.getElementById('pwaInstallClose');
 
-    var isMobile = window.matchMedia('(max-width: 640px)').matches;
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    /* Мобильный если UA мобильный или окно узкое (<=900px). */
+    var isMobile = /iPhone|iPad|iPod|Android|Mobile/i.test(ua)
+                 || window.matchMedia('(max-width: 900px)').matches;
     var isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true;
-    var ua = navigator.userAgent || '';
-    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    var DISMISS_KEY = 'pwaInstallDismissedAt';
-    var DISMISS_TTL = 7 * 24 * 60 * 60 * 1000;
-    var dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
-    var wasDismissed = dismissedAt && (Date.now() - dismissedAt < DISMISS_TTL);
-    if (!isMobile || isStandalone || wasDismissed) return;
+    if (!isMobile || isStandalone) return;
 
     var deferredPrompt = null;
     function showChip(){chip.classList.add('show')}
     function hideChip(){chip.classList.remove('show')}
-    function rememberDismiss(){localStorage.setItem(DISMISS_KEY, String(Date.now()))}
 
     /* Android Chrome/Edge: ловим событие, показываем чип. */
     window.addEventListener('beforeinstallprompt', function(e){
@@ -1305,35 +1302,27 @@ setTimeout(() => {
 
     window.addEventListener('appinstalled', function(){
         hideChip();
-        rememberDismiss();
         deferredPrompt = null;
     });
 
     if (btn) btn.addEventListener('click', function(){
         if (deferredPrompt) {
-            /* Android: нативный диалог Install. */
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then(function(){
                 deferredPrompt = null;
                 hideChip();
             });
         } else if (navigator.share) {
-            /* iOS Safari и любой другой браузер с Web Share API.
-               Открываем системный share-лист, где есть
-               «Add to Home Screen» / «На экран «Home»». */
             navigator.share({
                 title: document.title || 'ЭРА ЭТП',
                 url: location.origin + '/'
-            }).catch(function(){ /* пользователь отменил — оставляем чип видимым */ });
+            }).catch(function(){});
         }
     });
 
-    if (closeBtn) closeBtn.addEventListener('click', function(){
-        hideChip();
-        rememberDismiss();
-    });
+    if (closeBtn) closeBtn.addEventListener('click', hideChip);
 })();
-
+</script>
 
 </body>
 </html>

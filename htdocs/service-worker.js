@@ -9,7 +9,7 @@
  * Версия в имени кэша. При обновлении версии старые кэши удаляются.
  */
 
-const SW_VERSION = 'v2026-04-27-3';
+const SW_VERSION = 'v2026-04-27-4';
 const STATIC_CACHE = `era-static-${SW_VERSION}`;
 const RUNTIME_CACHE = `era-runtime-${SW_VERSION}`;
 
