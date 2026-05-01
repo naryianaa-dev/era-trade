@@ -122,9 +122,34 @@ $users = $pdo->query(
      FROM users u ORDER BY u.id ASC"
 )->fetchAll(PDO::FETCH_ASSOC);
 
+/*
+ * Единое место настройки комиссии оператора для всех типов торгов
+ * (аукцион/скандинавский/на понижение/закрытый/котировки/предложения
+ * и комиссионные продажи). getCommissionRate() в finances.php сначала
+ * ищет override на лот, потом на организатора, и, если их нет,
+ * возвращает глобальное значение отсюда (дефолт 5%).
+ */
+try {
+    $pdo->exec("CREATE TABLE IF NOT EXISTS commission_settings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NULL,
+        lot_id INT NULL,
+        rate_pct DECIMAL(5,2) NOT NULL DEFAULT 5.00,
+        UNIQUE KEY uniq_global (user_id, lot_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    // Seed глобального значения, если его ещё нет.
+    $existing = $pdo->query("SELECT id FROM commission_settings WHERE user_id IS NULL AND lot_id IS NULL LIMIT 1")->fetchColumn();
+    if (!$existing) {
+        $pdo->exec("INSERT INTO commission_settings (user_id, lot_id, rate_pct) VALUES (NULL, NULL, 5.00)");
+    }
+} catch (Throwable $e) {
+    error_log('users_control.commission_settings bootstrap: ' . $e->getMessage());
+}
+
 $global_comm = $pdo->query(
     "SELECT rate_pct FROM commission_settings WHERE user_id IS NULL AND lot_id IS NULL LIMIT 1"
-)->fetchColumn() ?: 5;
+)->fetchColumn();
+$global_comm = ($global_comm === false || $global_comm === null) ? 5 : (float)$global_comm;
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -191,13 +216,19 @@ $global_comm = $pdo->query(
 <a class="back-link" href="reestr.php">← Реестр</a>
 <h2>👥 Управление пользователями</h2>
 
-<!-- Глобальная комиссия -->
+<!-- Глобальная комиссия (для всех типов торгов) -->
 <div class="global-comm">
-    <label>Глобальная комиссия площадки:</label>
-    <input type="number" id="global-rate" value="<?= $global_comm ?>" min="0" max="50" step="0.5">
+    <label>Глобальная комиссия оператора (для всех типов торгов):</label>
+    <input type="number" id="global-rate" value="<?= htmlspecialchars((string)$global_comm) ?>" min="0" max="50" step="0.5">
     <span style="color:#64748b;">%</span>
     <button class="btn btn-blue btn-sm" onclick="setGlobalComm()">Сохранить</button>
     <span id="comm-msg" style="font-size:12px;color:#4ade80;"></span>
+</div>
+<div style="margin:-16px 0 20px;color:#64748b;font-size:12px;line-height:1.5;">
+    Применяется к аукциону, скандинавскому аукциону, аукциону на понижение,
+    закрытому аукциону, запросу котировок/предложений и комиссионным продажам.
+    По умолчанию 5%. Ставка по конкретному лоту или организатору имеет приоритет
+    над этим значением.
 </div>
 
 <!-- Таблица пользователей -->
