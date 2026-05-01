@@ -1263,12 +1263,13 @@ setTimeout(() => {
 <?php endif; ?>
 
 <script>
-/* PWA install chip — только мобильные. Показываем ТОЛЬКО когда браузер
-   поддерживает beforeinstallprompt (Android Chrome/Edge) — в этом случае
-   клик по кнопке триггерит нативный диалог. Для iOS Safari (нет
-   beforeinstallprompt) баннер не показываем вовсе — инструкцию решили не
-   выводить. Скрываем, если уже установлено (display-mode: standalone)
-   или пользователь закрыл чип (запоминаем на 7 суток). */
+/* PWA install chip — показывается на всех мобильных устройствах.
+   Android Chrome/Edge: клик → нативный диалог Install (beforeinstallprompt).
+   iOS Safari: клик → системный Share-лист через navigator.share(),
+               где выбирается «Add to Home Screen». Это единственный
+               способ подойти к установке на iOS без текстовой инструкции.
+   Скрываем, если уже установлено (display-mode:standalone /
+   navigator.standalone) или пользователь закрыл (помним 7 суток). */
 (function(){
     var chip = document.getElementById('pwaInstallChip');
     if (!chip) return;
@@ -1279,6 +1280,8 @@ setTimeout(() => {
     var isStandalone =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true;
+    var ua = navigator.userAgent || '';
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
     var DISMISS_KEY = 'pwaInstallDismissedAt';
     var DISMISS_TTL = 7 * 24 * 60 * 60 * 1000;
     var dismissedAt = parseInt(localStorage.getItem(DISMISS_KEY) || '0', 10);
@@ -1288,34 +1291,48 @@ setTimeout(() => {
     var deferredPrompt = null;
     function showChip(){chip.classList.add('show')}
     function hideChip(){chip.classList.remove('show')}
+    function rememberDismiss(){localStorage.setItem(DISMISS_KEY, String(Date.now()))}
 
+    /* Android Chrome/Edge: ловим событие, показываем чип. */
     window.addEventListener('beforeinstallprompt', function(e){
         e.preventDefault();
         deferredPrompt = e;
         showChip();
     });
 
+    /* iOS Safari не стреляет beforeinstallprompt — показываем чип сразу. */
+    if (isIOS) showChip();
+
     window.addEventListener('appinstalled', function(){
         hideChip();
-        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+        rememberDismiss();
         deferredPrompt = null;
     });
 
     if (btn) btn.addEventListener('click', function(){
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function(){
-            deferredPrompt = null;
-            hideChip();
-        });
+        if (deferredPrompt) {
+            /* Android: нативный диалог Install. */
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function(){
+                deferredPrompt = null;
+                hideChip();
+            });
+        } else if (navigator.share) {
+            /* iOS Safari и любой другой браузер с Web Share API.
+               Открываем системный share-лист, где есть
+               «Add to Home Screen» / «На экран «Home»». */
+            navigator.share({
+                title: document.title || 'ЭРА ЭТП',
+                url: location.origin + '/'
+            }).catch(function(){ /* пользователь отменил — оставляем чип видимым */ });
+        }
     });
 
     if (closeBtn) closeBtn.addEventListener('click', function(){
         hideChip();
-        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+        rememberDismiss();
     });
 })();
-</script>
 
 
 </body>
