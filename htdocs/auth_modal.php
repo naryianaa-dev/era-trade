@@ -510,6 +510,42 @@ $tg_auth_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https
                         <?= $lang === 'en' ? 'IN DEV' : 'В РАЗРАБОТКЕ' ?>
                     </span>
                 </button>
+
+                <!--
+                    Вход через Госуслуги (ЕСИА).  Кнопка ведёт на /esia/login.php,
+                    который инициирует OAuth2 authorization-code flow.  Включается
+                    автоматически, как только в htdocs/esia/.env появятся реальные
+                    ESIA_CLIENT_ID и SCR#6142301 будет одобрен.
+                -->
+                <?php
+                    $esiaConfigured = false;
+                    $esiaConfigPath = __DIR__ . '/esia/.env';
+                    if (is_readable($esiaConfigPath)) {
+                        $esiaEnvRaw = (string) file_get_contents($esiaConfigPath);
+                        if (preg_match('~^ESIA_CLIENT_ID\s*=\s*(\S+)~m', $esiaEnvRaw, $em) && $em[1] !== '') {
+                            $esiaConfigured = true;
+                        }
+                    }
+                ?>
+                <?php if ($esiaConfigured): ?>
+                <a class="auth-btn"
+                   href="/esia/login.php"
+                   style="margin-top:10px; background:linear-gradient(135deg,#0d4cd3 0%,#1e6bff 100%); color:#fff; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 2 4 5v6c0 5 3.4 9.6 8 11 4.6-1.4 8-6 8-11V5l-8-3z"/>
+                    </svg>
+                    <?= $lang === 'en' ? 'Sign in with Gosuslugi' : 'Войти через Госуслуги' ?>
+                </a>
+                <?php else: ?>
+                <button type="button" class="auth-btn" disabled
+                        title="<?= $lang === 'en' ? 'Pending approval from Mintsifry (SCR#6142301)' : 'Ожидает одобрения Минцифры (SCR#6142301)' ?>"
+                        style="margin-top:10px; background:#1e293b; color:#94a3b8; border:1px dashed #475569; cursor:not-allowed; opacity:0.7; position:relative;">
+                    🛡️ <?= $lang === 'en' ? 'Sign in with Gosuslugi' : 'Войти через Госуслуги' ?>
+                    <span style="margin-left:8px; padding:2px 8px; background:#fbbf24; color:#0f172a; border-radius:10px; font-size:10px; font-weight:600; white-space:nowrap;">
+                        <?= $lang === 'en' ? 'PENDING' : 'НА СОГЛАСОВАНИИ' ?>
+                    </span>
+                </button>
+                <?php endif; ?>
             </div>
 
             <!-- РЕГИСТРАЦИЯ -->
