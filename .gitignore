@@ -3,3 +3,15 @@ htdocs/img/
 *.apk
 *.bin
 *.zip
+
+# ESIA secrets — НИКОГДА не коммитить .env с реальными client_id/secret/ключами
+htdocs/esia/.env
+htdocs/esia/*.pfx
+htdocs/esia/*.p12
+htdocs/esia/*.key
+htdocs/esia/*.pem
+htdocs/esia/signer-node/node_modules/
+htdocs/logs/
+
+# Telegram bot
+htdocs/tg_config.php
